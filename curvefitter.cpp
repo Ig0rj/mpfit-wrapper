@@ -20,13 +20,15 @@ CurveFitter::CurveFitter(const double x_source[], const double y_source[], size_
     this->y_ptr=y_source;
     this->element_number=element_number;
 
-    this->param.x=(double*)x_source;
-    this->param.y=(double*)y_source;
+    this->param.x=const_cast<double*>(x_source);
+    this->param.y=const_cast<double*>(y_source);
 }
 
 
  CurveFitter::~CurveFitter()
 {
+
+
 
 }
 
@@ -78,7 +80,6 @@ CurveFitter::FittingStatus CurveFitter::validate_source_data(void)
 {
     if ((this->x_ptr==nullptr) || (this->y_ptr==nullptr) || (this->element_number==0))
         return  FittingStatus::FS_SOURCE_DATA_NOT_SET;
-
 
     if(x_ptr[0]<x_ptr[1])
     {
@@ -215,12 +216,12 @@ CurveFitter::FittingStatus CurveFitter::set_source_data_points(const double x_so
     if(element_number<2)
         return FittingStatus::FS_SOURCE_NOT_ENOUGH_ELEMENTS;
 
-    this->x_ptr=(double*)x_source;
-    this->y_ptr=(double*)y_source;
+    this->x_ptr=const_cast<double*>(x_source);
+    this->y_ptr=const_cast<double*>(y_source);
     this->element_number=element_number;
 
-    this->param.x=(double*)x_source;
-    this->param.y=(double*)y_source;
+    this->param.x=const_cast<double*>(x_source);
+    this->param.y=const_cast<double*>(y_source);
 
     return FittingStatus::FS_OK;
 }
@@ -447,7 +448,7 @@ double CurveFitter::calc_piecweise_point( double x_point)
 int mpfit_routine(int m, int n, double *p, double *dy, double **dvec, void *vars)
 {
     int i;
-    struct vars_struct *v = (struct vars_struct *) vars;
+    struct vars_struct *v = static_cast<struct vars_struct*>(vars);
     double *x, *y, *ey, f;
 
     x = v->x;
