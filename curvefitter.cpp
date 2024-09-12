@@ -24,14 +24,6 @@ CurveFitter::CurveFitter(const double x_source[], const double y_source[], size_
     this->param.y=const_cast<double*>(y_source);
 }
 
-
- CurveFitter::~CurveFitter()
-{
-
-
-
-}
-
 const double* CurveFitter::get_source_x(void)
 {
         return this->x_ptr;
@@ -196,8 +188,6 @@ CurveFitter::FittingStatus  CurveFitter::validate_data(FittingModel model)
     return FittingStatus::FS_OK;
 }
 
-
-
 CurveFitter::FittingStatus  CurveFitter::set_custom_fitting_model(custom_calc_func func, int coef_numb)
 {
 
@@ -208,8 +198,8 @@ CurveFitter::FittingStatus  CurveFitter::set_custom_fitting_model(custom_calc_fu
     this->custom_func_coef_numb=coef_numb;
 
     return FittingStatus::FS_OK;
-
 }
+
 CurveFitter::FittingStatus CurveFitter::set_source_data_points(const double x_source[],const double y_source[], size_t element_number)
 {
 
@@ -228,16 +218,13 @@ CurveFitter::FittingStatus CurveFitter::set_source_data_points(const double x_so
 
 void CurveFitter::SetRoutineParam(FittingModel model)
 {
-
     std::memset(&result,0,sizeof(mp_result));
 
     std::memset(&config, 0, sizeof(config));
     config.maxiter = 1000;
 
-
     for(int i=0;i<MAX_PARAM_NUMB;i++)
         param_arr[i]=1.0;
-
 
     switch(model)
     {
@@ -301,7 +288,6 @@ void CurveFitter::SetRoutineParam(FittingModel model)
     }
 }
 
-
 CurveFitter::FittingStatus CurveFitter::calculate_coef(FittingModel model, std::vector<double>& coef )
 {
 
@@ -316,13 +302,12 @@ CurveFitter::FittingStatus CurveFitter::calculate_coef(FittingModel model, std::
     for (int i=0; i<this->element_number; i++)
         ey[i] = 0.07;
 
-
     param.ey = ey;
     param.func=this->routine;
 
     if(model!=FittingModel::PIECWEISELINEAR)
     {
-            mpfit(mpfit_routine,this->element_number,  this->routine_coef_numb, param_arr, 0, &config, (void *) &param, &result);
+            mpfit(mpfit_routine,this->element_number,  this->routine_coef_numb, param_arr, 0, &config, reinterpret_cast<void*>(&param), &result);
             coef.clear();
             coef.reserve(this-> routine_coef_numb);
             for(auto i=0;i<this->routine_coef_numb;i++)
@@ -364,7 +349,7 @@ CurveFitter::FittingStatus CurveFitter::calculate(const double x[],size_t points
     if(model!=FittingModel::PIECWEISELINEAR)
     {
 
-     mpfit(mpfit_routine,this->element_number,  this->routine_coef_numb, param_arr, 0, &config, (void *) &param, &result);
+     mpfit(mpfit_routine,this->element_number,  this->routine_coef_numb, param_arr, 0, &config, reinterpret_cast<void*>(&param), &result);
         for(auto i=0;i<points_to_calc;i++)
             result_y[i]=routine(x[i],param_arr);
     }
@@ -388,14 +373,14 @@ double CurveFitter::calc_piecweise_point( double x_point)
 
         if(x_point<=this->x_ptr[1])
         {
-            param.x=(double*)this->x_ptr;
-            param.y=(double*)this->y_ptr;
+            param.x=const_cast<double*>(this->x_ptr);
+            param.y=const_cast<double*>(this->y_ptr);
         }
 
         if(x_point>=this->x_ptr[this->element_number-2])
         {
-            param.x=(double*)&this->x_ptr[this->element_number-2];
-            param.y=(double*)&this->y_ptr[this->element_number-2];
+            param.x=const_cast<double*>(&this->x_ptr[this->element_number-2]);
+            param.y=const_cast<double*>(&this->y_ptr[this->element_number-2]);
         }
 
         if((x_point>this->x_ptr[1]) && (x_point<this->x_ptr[this->element_number-2]))
@@ -404,8 +389,8 @@ double CurveFitter::calc_piecweise_point( double x_point)
             {
                 if((x_point>=this->x_ptr[i]) && (x_point<=this->x_ptr[i+1]))
                 {
-                    param.x=(double*)&this->x_ptr[i];
-                    param.y=(double*)&this->y_ptr[i];
+                    param.x=const_cast<double*>(&this->x_ptr[i]);
+                    param.y=const_cast<double*>(&this->y_ptr[i]);
                 }
             }
         }
@@ -414,14 +399,14 @@ double CurveFitter::calc_piecweise_point( double x_point)
     {
         if(x_point>=this->x_ptr[1])
         {
-            param.x=(double*)this->x_ptr;
-            param.y=(double*)this->y_ptr;
+            param.x=const_cast<double*>(this->x_ptr);
+            param.y=const_cast<double*>(this->y_ptr);
         }
 
         if(x_point<=this->x_ptr[this->element_number-2])
         {
-            param.x=(double*)&this->x_ptr[this->element_number-2];
-            param.y=(double*)&this->y_ptr[this->element_number-2];
+            param.x=const_cast<double*>(&this->x_ptr[this->element_number-2]);
+            param.y=const_cast<double*>(&this->y_ptr[this->element_number-2]);
         }
 
         if((x_point<this->x_ptr[1]) && (x_point>this->x_ptr[this->element_number-2]))
@@ -430,25 +415,23 @@ double CurveFitter::calc_piecweise_point( double x_point)
             {
                 if((x_point<=this->x_ptr[i]) && (x_point>=this->x_ptr[i+1]))
                 {
-                    param.x=(double*)&this->x_ptr[i];
-                    param.y=(double*)&this->y_ptr[i];
+                    param.x=const_cast<double*>(&this->x_ptr[i]);
+                    param.y=const_cast<double*>(&this->y_ptr[i]);
                 }
             }
         }
 
     }
 
-
-     mpfit(mpfit_routine,2,  this->routine_coef_numb, param_arr, 0, &config, (void *) &param, &result);
+    mpfit(mpfit_routine,2,  this->routine_coef_numb, param_arr, 0, &config, reinterpret_cast<void*>(&param), &result);
 
     return    routine(x_point,param_arr);
-
 }
 
 int mpfit_routine(int m, int n, double *p, double *dy, double **dvec, void *vars)
 {
     int i;
-    struct vars_struct *v = static_cast<struct vars_struct*>(vars);
+    struct vars_struct *v = reinterpret_cast<struct vars_struct*>(vars);
     double *x, *y, *ey, f;
 
     x = v->x;

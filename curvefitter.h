@@ -54,7 +54,7 @@ public:
     CurveFitter(const double x_source[],const double y_source[], size_t element_number);
     CurveFitter(const CurveFitter&) = delete;
     CurveFitter(const CurveFitter&&) = delete;
-    ~CurveFitter();
+    ~CurveFitter()=default;
 
     CurveFitter& operator= (const  CurveFitter&) =delete;
     CurveFitter& operator= (const  CurveFitter&&) =delete;
@@ -80,7 +80,7 @@ private:
     FittingStatus validate_data (FittingModel model);
     FittingStatus validate_source_data (void);
 
-    double calc_piecweise_point( double x_point);
+    double calc_piecweise_point(double x_point);
     void SetRoutineParam(FittingModel mode);
 
 const double *x_ptr, *y_ptr;
